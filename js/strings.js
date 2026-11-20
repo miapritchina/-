@@ -3,8 +3,9 @@
  * (pure; also used by tools/check-strings.mjs). */
 import {
   TUNINGS, tuningById, buildNotes, HUI, HUI_D, CN_NUM, DEGREES, SCALES,
-  TYPE_INFO, intervalName, degreeLabel, westernName, cents
-} from "./modules/strings-model.js?v=26";
+  TYPE_INFO, intervalName, degreeLabel, westernName, cents,
+  tuningSteps, PARTIAL_HUI, midiToHz
+} from "./modules/strings-model.js?v=29";
 import { escapeHtml as esc } from "./modules/util.js?v=26";
 
 var LS_KEY = "stringMap.v1";
@@ -447,6 +448,11 @@ function buildControls() {
   });
 
   $("smZoomIn").addEventListener("click", function () { zoomBy(1); });
+  $("smTune").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-play]"); if (!b) return;
+    playMidi(+b.dataset.play);
+    try { window.posthog && window.posthog.capture("string_map_tuning_tone", { tuning: st.tuning, midi: +b.dataset.play }); } catch (err) {}
+  });
   $("smLabels").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-labels]");
     if (!b || b.dataset.labels === st.labels) return;
@@ -527,9 +533,71 @@ function setTuning() {
   notes.forEach(function (n) { byId[n.id] = n; });
   if (selectedId && !byId[selectedId]) selectedId = null;
   var opens = notes.filter(function (n) { return n.type === "san"; });
+  renderTune();
   $("smTuningInfo").innerHTML = '<span class="cjk">' + tuning.name + "</span> · 1 = " + esc(tuning.key) +
     " · strings " + opens.map(function (n) { return jpHtml(n); }).join(" ") +
     " <small>(" + opens.map(function (n) { return esc(n.west.helm); }).join(" ") + ")</small>";
+}
+
+// ---------------- how to tune (定弦) ----------------
+var NOTE_NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+function stringName(s) { return CN_NUM[s] + "弦"; }
+function touch(s, p) {
+  return p === 1 ? '<b class="cjk">' + stringName(s) + "</b> open (散)"
+    : '<b class="cjk">' + stringName(s) + "</b> 泛 at <b class=\"cjk\">" + CN_NUM[PARTIAL_HUI[p]] + "徽</b>";
+}
+function renderTune() {
+  var box = $("smTune"); if (!box) return;
+  var g = tuningSteps(tuning, 1), o = tuning.open, base = TUNINGS[0];
+  var openName = function (s) { return esc(westernName(o[s - 1], tuning).sci); };
+  var html = '<h2><span class="cjk">定弦</span> How to tune · ' + esc(tuning.name) + "</h2>";
+  if (tuning.id !== base.id) {
+    var moves = [];
+    for (var s = 1; s <= 7; s++) {
+      var dlt = o[s - 1] - base.open[s - 1];
+      if (dlt) moves.push((dlt < 0 ? "slacken" : "tighten") + ' <b class="cjk">' + stringName(s) + "</b> by " +
+        (Math.abs(dlt) === 1 ? "a semitone" : Math.abs(dlt) + " semitones") + " (" + esc(westernName(base.open[s - 1], base).sci) + " → " + openName(s) + ")");
+    }
+    html += '<p class="sm-tune-from"><b>From 正調:</b> ' + moves.join("; ") + '. Then check it with the pairs below.</p>';
+  }
+  html += '<p class="sm-note">Pitch on the qin is relative: what matters is how the strings sound against each other. ' +
+    'Lightly touch the string over the hui (don\'t press) and pluck for a 泛 harmonic. Two notes in tune sound as one; ' +
+    'out of tune you hear a slow wobble (beats) that slows and stops as you get there. Turn the 琴軫 tuning peg; tighter is higher.</p>';
+  html += '<ol class="sm-tune-steps"><li><span>Tune <b class="cjk">' + stringName(g.ref) + "</b> to " + openName(g.ref) +
+    " (" + midiToHz(o[g.ref - 1]).toFixed(1) + " Hz), or wherever your strings sit comfortably.</span>" +
+    '<button type="button" class="sm-play" data-play="' + o[g.ref - 1] + '" aria-label="Play ' + openName(g.ref) + '">▶</button></li>';
+  g.steps.forEach(function (x) {
+    html += "<li><span>Tune " + touch(x.b, x.pb).replace("</b>", "</b>") + " to match " + touch(x.a, x.pa) +
+      ' <small>both ' + esc(westernName(x.midi, tuning).sci) + "</small></span>" +
+      '<button type="button" class="sm-play" data-play="' + x.midi + '" aria-label="Play the unison">▶</button></li>';
+  });
+  html += "</ol>";
+  if (g.checks.length) {
+    html += '<details class="sm-tune-checks"><summary>Double-check with ' + g.checks.length + " more pairs</summary><ul>" +
+      g.checks.map(function (x) {
+        return "<li><span>" + touch(x.a, x.pa) + " = " + touch(x.b, x.pb) + ' <small>' + esc(westernName(x.midi, tuning).sci) + "</small></span>" +
+          '<button type="button" class="sm-play" data-play="' + x.midi + '" aria-label="Play">▶</button></li>';
+      }).join("") + "</ul></details>";
+  }
+  box.innerHTML = html;
+}
+// a soft plucked tone to tune against
+var actx = null;
+function playMidi(m) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    var f = midiToHz(m), t = actx.currentTime, out = actx.createGain();
+    out.gain.setValueAtTime(0.0001, t);
+    out.gain.exponentialRampToValueAtTime(0.35, t + 0.01);
+    out.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+    out.connect(actx.destination);
+    [1, 2, 3].forEach(function (h, i) {
+      var osc = actx.createOscillator(), g = actx.createGain();
+      osc.frequency.value = f * h; g.gain.value = [1, 0.25, 0.08][i];
+      osc.connect(g); g.connect(out); osc.start(t); osc.stop(t + 3.3);
+    });
+  } catch (e) {}
 }
 
 function changed() {
