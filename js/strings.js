@@ -122,12 +122,16 @@ function computeGeo() {
   }
   var k = lane / 58, mk = Math.max(0.75, k);
   var padL = 44, padR = 86;
-  var xY = W - padR;            // yueshan (d = 0)
-  var xL = padL;                // longyin (d = 1)
+  var xY = W - padR;            // yueshan side of the drawn board
+  var xL = padL;                // longyin side
+  // The empty ends (yueshan to hui 1, beyond the last stopped note) are trimmed,
+  // and the scale leans 35% toward pitch spacing so the crowded high hui get room.
+  var D0 = 0.095, D1 = 0.955, WARP = 0.35, LG = Math.log(D1 / D0);
+  var u = function (d) { return (1 - WARP) * (d - D0) / (D1 - D0) + WARP * Math.log(d / D0) / LG; };
   return {
     W: W, H: top + lane * 7 + (k < 1 ? 22 : 26), lane: lane, top: top, k: k, mk: mk,
     xY: xY, xL: xL, L: xY - xL, xOpen: xY + 40,
-    x: function (d) { return xY - d * (xY - xL); },
+    x: function (d) { return xY - u(Math.max(d, D0)) * (xY - xL); },
     y: function (s) { return top + (7 - s) * lane + lane / 2; }
   };
 }
@@ -199,7 +203,7 @@ function render() {
     parts.push('<circle cx="' + hx + '" cy="' + (bodyTop + 1) + '" r="' + (k === 7 ? 5.5 : 4) +
       '" fill="#ece5d2" stroke="#9c927c" stroke-width=".6"/>');
     // two-character numerals collide where hui 11/12 sit close together: drop 十二's then
-    if (!(k === 12 && (HUI_D[12] - HUI_D[11]) * G.L < 30))
+    if (!(k === 12 && G.x(HUI_D[11]) - G.x(HUI_D[12]) < 30))
       parts.push('<text class="sm-hui-cn" x="' + hx + '" y="' + (bodyTop - 20) + '">' + CN_NUM[k] + '</text>');
     parts.push('<text class="sm-hui-n" x="' + hx + '" y="' + (bodyTop - 8) + '">' + k + '</text>');
   }
