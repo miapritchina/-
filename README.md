@@ -26,6 +26,9 @@ It also deploys as-is to GitHub Pages or any static host.
 
 ```
 index.html                              # app shell
+strings.html                            # 弦上音位: interactive map of notes on the 7 strings
+js/strings.js, js/modules/strings-model.js  # string map UI + pure music model
+tools/check-strings.mjs                 # node check of the string-map numbers
 css/styles.css                          # styling + @font-face
 js/app.js                               # rendering, nav, search, gallery, composer
 data/techniques.json                    # the technique dataset (Sections A–H)

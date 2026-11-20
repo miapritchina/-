@@ -5,7 +5,7 @@
  *   4. a hand-drawn reduced-character notation scan (peiyouqin, raster),
  *   5. the plain reduced jianzipu character.
  */
-import { escapeHtml } from "./util.js";
+import { escapeHtml } from "./util.js?v=26";
 
 export function glyphKind(t) {
   if (t.hand_glyph) return "hand";

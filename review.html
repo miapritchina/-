@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Glyph render review · 古琴减字谱</title>
   <meta name="robots" content="noindex" />
-  <link rel="stylesheet" href="css/styles.css?v=20" />
+  <link rel="stylesheet" href="css/styles.css?v=26" />
   <style>
     body { padding: 1.2rem; }
     .rv-head { max-width: 60rem; margin: 0 auto 1.2rem; }
@@ -80,7 +80,7 @@ addEventListener('appinstalled', function () { posthog.capture('app_installed');
   <div id="extra" class="rv-grid"></div>
 
   <script type="module">
-    import { symbolHtml, hasTileGlyph } from "./js/modules/symbol.js";
+    import { symbolHtml, hasTileGlyph } from "./js/modules/symbol.js?v=26";
 
     function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
     function boxFor(t){

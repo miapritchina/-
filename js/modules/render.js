@@ -1,8 +1,8 @@
 /* Filtering, the main results render, and in-page navigation
  * (click-to-play videos + jump-to-related-card). */
-import { escapeHtml, normalize } from "./util.js";
-import { state, store, el, catById } from "./store.js";
-import { categoryBlock, card } from "./card.js";
+import { escapeHtml, normalize } from "./util.js?v=26";
+import { state, store, el, catById } from "./store.js?v=26";
+import { categoryBlock, card } from "./card.js?v=26";
 
 function matches(t) {
   if (state.cat !== "all" && t.category !== state.cat) return false;

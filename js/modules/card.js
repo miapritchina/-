@@ -1,9 +1,9 @@
 /* Renders one self-contained technique card: glyph, instruction, demo
  * photo, any number of embeds (videos + illustrations), the poetic
  * gesture-image, cross-links to related techniques, and sources. */
-import { escapeHtml, hostOf } from "./util.js";
-import { store } from "./store.js";
-import { symbolHtml, hasTileGlyph } from "./symbol.js";
+import { escapeHtml, hostOf } from "./util.js?v=26";
+import { store } from "./store.js?v=26";
+import { symbolHtml, hasTileGlyph } from "./symbol.js?v=26";
 
 function handTag(hand) {
   var label = hand === "left" ? "left hand" : hand === "right" ? "right hand" : "either hand";
