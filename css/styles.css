@@ -646,16 +646,19 @@ footer.foot { padding: 2rem 1.5rem; color: var(--ink-faint); font-size: .8rem; b
 .sm-hui-n { font-size: 10px; fill: var(--ink-faint); text-anchor: middle; }
 .sm-hui-cn { font-size: 11px; fill: var(--ink-soft); text-anchor: middle; font-family: var(--cjk); }
 .mk { cursor: pointer; }
-.mk text { pointer-events: none; text-anchor: middle; dominant-baseline: central; font-weight: 700; font-size: 11px; }
+.mk text { pointer-events: none; text-anchor: middle; dominant-baseline: central; font-weight: 700; font-size: 13.5px; }
+.mk text .oct { font-size: .62em; font-weight: 600; opacity: .85; }
+.sm-labels button { width: auto; padding: 0 .7rem; font-size: .8rem; letter-spacing: .04em; }
+.sm-labels button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .mk .hit { fill: transparent; }
 .mk-an .body { fill: var(--rust); stroke: #e3a088; stroke-width: .8; }
 .mk-an text { fill: #fff3ea; }
 .mk-an .dot { fill: #fff3ea; }
 .mk-fan .body { fill: #18211c; stroke: var(--jade); stroke-width: 1.6; }
-.mk-fan text { fill: #bfe0cd; font-size: 10px; }
+.mk-fan text { fill: #bfe0cd; font-size: 12px; }
 .mk-fan .dot { fill: #bfe0cd; }
 .mk-san .body { fill: var(--accent); stroke: #f0d79a; stroke-width: .8; }
-.mk-san text { fill: #1a1614; font-size: 12px; }
+.mk-san text { fill: #1a1614; font-size: 14.5px; }
 .mk-san .dot { fill: #1a1614; }
 .mk.is-gong .body { stroke: #fff; stroke-width: 1.8; }
 .mk:focus { outline: none; }
