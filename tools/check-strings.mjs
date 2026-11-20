@@ -72,3 +72,18 @@ for (const n of zheng.filter(n => n.type === "an" && n.onHui).sort((a, b) => a.s
 const counts = {};
 for (const n of zheng) counts[n.type] = (counts[n.type] || 0) + 1;
 console.log("\n正調 totals:", JSON.stringify(counts));
+
+// ---- tuning guide ----
+import { tuningSteps, TUNINGS } from "../js/modules/strings-model.js";
+{
+  const has = (list, a, pa, b, pb) => list.some(x => (x.a === a && x.pa === pa && x.b === b && x.pb === pb) || (x.a === b && x.pa === pb && x.b === a && x.pb === pa));
+  for (const t of TUNINGS) {
+    const g = tuningSteps(t);
+    ok(t.name + " tuning guide reaches all 7 strings", g.steps.length, 6);
+    console.log(t.name, g.steps.map(x => `${x.b}←${x.a} (${x.pb}:${x.pa})`).join("  "), "| checks", g.checks.length);
+  }
+  const z = tuningSteps(TUNINGS[0]), all = z.steps.concat(z.checks);
+  ok("正調: 一弦九徽 = 四弦七徽", has(all, 1, 3, 4, 2), true);
+  ok("正調: 二弦十徽 = 四弦九徽", has(all, 2, 4, 4, 3), true);
+  ok("正調: 三弦九徽 = 六弦七徽", has(all, 3, 3, 6, 2), true);
+}

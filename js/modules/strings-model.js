@@ -195,3 +195,52 @@ export const TYPE_INFO = {
   fan: { cn: "泛音", short: "泛", en: "harmonic" },
   an:  { cn: "按音", short: "按", en: "stopped" }
 };
+
+// ---- tuning by harmonic unisons ----
+/* Two strings are tuned against each other where harmonic partial p of one
+ * string sounds the same pitch as partial q of the other (f_a·p = f_b·q).
+ * Partial 1 is the open string. Each partial is touched at its usual hui. */
+export const PARTIAL_HUI = { 1: null, 2: 7, 3: 9, 4: 10, 5: 8, 6: 12 };
+function pairScore(p, q) {
+  var s = Math.max(p, q);
+  if (p === 1 || q === 1) s += 2;          // prefer harmonic-to-harmonic
+  if (p >= 5 || q >= 5) s += 4;            // thirds only when nothing else connects
+  return s;
+}
+export function unisonPairs(tuning) {
+  var out = [], o = tuning.open;
+  for (var a = 0; a < 7; a++) for (var b = 0; b < 7; b++) {
+    if (a === b) continue;
+    for (var p = 1; p <= 6; p++) for (var q = 1; q <= 6; q++) {
+      if (p === q) continue;
+      var want = 12 * Math.log2(p / q);       // semitones string b sits above string a
+      if (Math.abs(want - (o[b] - o[a])) > 0.2) continue;
+      out.push({ a: a + 1, b: b + 1, pa: p, pb: q, midi: o[a] + Math.round(12 * Math.log2(p)),
+                 score: pairScore(p, q) });
+    }
+  }
+  return out;
+}
+/* An order of work: tune `ref` first, then each further string against one
+ * already tuned, always taking the simplest unison available. */
+export function tuningSteps(tuning, ref) {
+  ref = ref || 1;
+  var pairs = unisonPairs(tuning), tuned = {}, steps = [], used = {};
+  tuned[ref] = true;
+  for (var n = 1; n < 7; n++) {
+    var best = null;
+    pairs.forEach(function (x) {
+      if (!tuned[x.a] || tuned[x.b]) return;
+      if (!best || x.score < best.score || (x.score === best.score && x.b < best.b)) best = x;
+    });
+    if (!best) break;
+    tuned[best.b] = true; steps.push(best);
+    used[Math.min(best.a, best.b) + "-" + Math.max(best.a, best.b)] = true;
+  }
+  var seen = {}, checks = pairs.filter(function (x) {
+    var k = Math.min(x.a, x.b) + "-" + Math.max(x.a, x.b);
+    if (x.a > x.b || used[k] || seen[k] || x.score > 6) return false;
+    seen[k] = true; return true;
+  }).sort(function (x, y) { return x.score - y.score || x.a - y.a; });
+  return { ref: ref, steps: steps, checks: checks };
+}
