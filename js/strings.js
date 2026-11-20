@@ -21,7 +21,8 @@ var DEFAULTS = {
   single: 0,
   strings: [true, true, true, true, true, true, true],
   octs: { "-1": true, "0": true, "1": true, "2": true, "3": true },
-  zoom: 1
+  zoom: 1,
+  labels: "jp"
 };
 
 var st = load();
@@ -51,6 +52,7 @@ function load() {
         if (Array.isArray(v.strings) && v.strings.length === 7) s.strings = v.strings.map(Boolean);
         if (v.octs) for (var o in s.octs) if (o in v.octs) s.octs[o] = !!v.octs[o];
         if (ZOOMS.indexOf(v.zoom) >= 0) s.zoom = v.zoom;
+        if (v.labels === "jp" || v.labels === "abc") s.labels = v.labels;
       }
     }
   } catch (e) {}
@@ -74,6 +76,7 @@ function trackFilters(count) {
         strings: st.strings.map(function (on, i) { return on ? i + 1 : ""; }).join(""),
         octaves: Object.keys(st.octs).filter(function (o) { return st.octs[o]; }).join(","),
         zoom: st.zoom,
+        labels: st.labels,
         shown: count
       });
     } catch (e) {}
@@ -146,23 +149,28 @@ function markerSvg(n, x, y, cls) {
   var g = '<g class="mk mk-' + n.type + cls + (n.pc === 0 ? " is-gong" : "") + '" data-id="' + n.id +
     '" tabindex="0" role="button" aria-label="' + esc(aria) + '">';
   if (n.type === "san") {
-    r = 12;
-    body = '<rect class="ring" x="' + (x - 16) + '" y="' + (y - 16) + '" width="32" height="32" rx="8"/>' +
-      '<rect class="body" x="' + (x - 12) + '" y="' + (y - 12) + '" width="24" height="24" rx="5"/>';
+    r = 14;
+    body = '<rect class="ring" x="' + (x - 18) + '" y="' + (y - 18) + '" width="36" height="36" rx="9"/>' +
+      '<rect class="body" x="' + (x - 14) + '" y="' + (y - 14) + '" width="28" height="28" rx="6"/>';
   } else if (n.type === "fan") {
-    r = 9;
+    r = 11;
     body = '<circle class="ring" cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '"/>' +
       '<circle class="body" cx="' + x + '" cy="' + y + '" r="' + r + '"/>';
   } else {
-    r = 10.5;
+    r = 13;
     body = '<circle class="ring" cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '"/>' +
       '<circle class="body" cx="' + x + '" cy="' + y + '" r="' + r + '"/>';
   }
-  var ty = y + (n.oct > 0 ? 1.5 : n.oct < 0 ? -1.5 : 0);
+  var abc = st.labels === "abc";
+  var ty = abc ? y : y + (n.oct > 0 ? 1.5 : n.oct < 0 ? -1.5 : 0);
+  // letter mode: note letter with its accidental, octave number small at the lower right
+  var text = abc
+    ? '<text x="' + x + '" y="' + ty.toFixed(1) + '">' + esc(n.west.letter + n.west.acc) +
+      '<tspan class="oct" dy="' + (r * 0.35).toFixed(1) + '">' + n.west.octave + '</tspan></text>'
+    : '<text x="' + x + '" y="' + ty.toFixed(1) + '">' + label + '</text>' + jpDots(x, y, n.oct, r * 0.62, r * 0.66);
   if (geo.mk < 1) g = g.replace('>', ' transform="translate(' + x + ' ' + y + ') scale(' + geo.mk.toFixed(3) + ') translate(' + (-x) + ' ' + (-y) + ')">');
   return g + '<circle class="hit" cx="' + x + '" cy="' + y + '" r="' + (r + 3) + '"/>' + body +
-    '<text x="' + x + '" y="' + ty.toFixed(1) + '">' + label + '</text>' +
-    jpDots(x, y, n.oct, r * 0.62, r * 0.66) + '</g>';
+    text + '</g>';
 }
 
 function render() {
@@ -225,11 +233,11 @@ function render() {
       .sort(function (a, b) { return G.x(a.d) - G.x(b.d); });
     var cluster = [];
     var flush = function () {
-      if (cluster.length > 1) cluster.forEach(function (n, i) { offs[n.id] = (i % 2 ? 7 : -7) * G.k; });
+      if (cluster.length > 1) cluster.forEach(function (n, i) { offs[n.id] = (i % 2 ? 8 : -8) * G.k; });
       cluster = [];
     };
     row.forEach(function (n, i) {
-      if (i && G.x(n.d) - G.x(row[i - 1].d) < 22 * G.mk) cluster.push(n);
+      if (i && G.x(n.d) - G.x(row[i - 1].d) < 27 * G.mk) cluster.push(n);
       else { flush(); cluster.push(n); }
     });
     flush();
@@ -243,8 +251,8 @@ function render() {
   draw.forEach(function (n) {
     var x, y;
     if (n.type === "san") { x = G.xOpen; y = G.y(n.string); }
-    else if (n.type === "fan") { x = G.x(n.d); y = G.y(n.string) - 18 * G.k; }
-    else { x = G.x(n.d); y = G.y(n.string) + 6 * G.k + (offs[n.id] || 0); }
+    else if (n.type === "fan") { x = G.x(n.d); y = G.y(n.string) - 21 * G.k; }
+    else { x = G.x(n.d); y = G.y(n.string) + 7 * G.k + (offs[n.id] || 0); }
     var cls = (sameIds[n.id] ? " same" : "") + (n.id === selectedId ? " sel" : "") + (!shownIds[n.id] ? " ghost" : "");
     parts.push(markerSvg(n, +x.toFixed(1), +y.toFixed(1), cls));
   });
@@ -259,6 +267,7 @@ function render() {
 
   $("smCount").innerHTML = "<b>" + shown.length + "</b> position" + (shown.length === 1 ? "" : "s") + " shown";
   $("smZoomVal").textContent = st.zoom + "×";
+  document.querySelectorAll("#smLabels button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.labels === st.labels); });
   $("smZoomOut").disabled = st.zoom === ZOOMS[0];
   $("smZoomIn").disabled = st.zoom === ZOOMS[ZOOMS.length - 1];
 
@@ -438,6 +447,11 @@ function buildControls() {
   });
 
   $("smZoomIn").addEventListener("click", function () { zoomBy(1); });
+  $("smLabels").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-labels]");
+    if (!b || b.dataset.labels === st.labels) return;
+    st.labels = b.dataset.labels; save(); render(); trackFilters(notes.filter(passes).length);
+  });
   $("smZoomOut").addEventListener("click", function () { zoomBy(-1); });
 
   svg.addEventListener("click", function (e) {
