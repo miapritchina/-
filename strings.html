@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Notes on the strings · 弦上音位</title>
+  <meta name="description" content="Interactive map of every playable note on the guqin's 7 strings: open (散), harmonic (泛) and stopped (按) positions in 徽分 notation, with jianpu, degree names and filters by tuning, scale, string and register." />
+  <link rel="stylesheet" href="css/styles.css?v=26" />
+<!-- PostHog analytics for "guqin-techniques" (one PostHog project for all of Mia's sites; the `app` property tells them apart) -->
+<script>
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}p||((p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",p.onerror=function(){p=null},(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r));var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+posthog.init('phc_Bym9u4MV2tLb6YmGStksWtW9Z2yCAYGeeUqKz86CJxxh', {
+  api_host: 'https://us.i.posthog.com',
+  ui_host: 'https://us.posthog.com',
+  defaults: '2026-08-30',
+  person_profiles: 'always',
+  capture_pageview: 'history_change',
+  capture_pageleave: true,
+  autocapture: true,
+  rageclick: true,
+  capture_dead_clicks: true,
+  enable_heatmaps: true,
+  capture_performance: { web_vitals: true, network_timing: true },
+  capture_exceptions: true,
+  enable_recording_console_log: true,
+  logs: { captureConsoleLogs: true },
+  session_recording: { maskAllInputs: false, recordHeaders: true, recordBody: true, recordCrossOriginIframes: true },
+  before_send: function (e) {
+    if (!e) return e;
+    e.properties = e.properties || {};
+    e.properties.app = 'guqin-techniques';
+    e.properties.display_mode = matchMedia('(display-mode: standalone)').matches ? 'installed' : 'browser';
+    e.properties.online = navigator.onLine;
+    return e;
+  },
+  loaded: function (ph) {
+    if (ph.get_distinct_id() !== 'mia') ph.identify('mia', { name: 'Mia' });
+  },
+});
+addEventListener('appinstalled', function () { posthog.capture('app_installed'); });
+</script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-glyph" aria-hidden="true">弦</span>
+      <div class="brand-text">
+        <h1>Notes on the strings</h1>
+        <p class="brand-sub">弦上音位 · every 散 泛 按 position on the 7 strings</p>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <a class="page-link" href="index.html"><span aria-hidden="true">←</span> <span class="page-link-cjk">指</span> Techniques</a>
+    </div>
+  </header>
+
+  <main class="sm-main">
+    <div class="sm-toolbar">
+      <div class="sm-tuning">
+        <label for="smTuning">Tuning 定弦</label>
+        <select id="smTuning" class="sm-select"></select>
+        <span id="smTuningInfo" class="sm-tuning-info"></span>
+      </div>
+      <span class="sm-count" id="smCount" aria-live="polite"></span>
+      <div class="sm-zoom" role="group" aria-label="Zoom the board">
+        <button type="button" id="smZoomOut" aria-label="Zoom out">−</button>
+        <span id="smZoomVal">1×</span>
+        <button type="button" id="smZoomIn" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+
+    <div class="sm-board-wrap">
+      <div class="sm-scroller" id="smScroller"><svg id="smBoard" role="group" aria-label="Guqin board seen by the player"></svg></div>
+      <div class="sm-strlabels" id="smStrLabels" aria-hidden="true"></div>
+    </div>
+    <div class="sm-board-cap">
+      <span>← tail · <span class="cjk">龍齦</span> longyin</span>
+      <span>string 1 (thickest) nearest you, at the bottom</span>
+      <span><span class="cjk">岳山</span> yueshan · head → <span class="cjk">散</span></span>
+    </div>
+
+    <div class="sm-lower">
+      <section class="sm-panel sm-detail" id="smDetail" aria-live="polite"></section>
+
+      <section class="sm-panel sm-filters" aria-label="Filters">
+        <h2><span class="cjk">篩選</span> Filters</h2>
+        <div class="sm-frow">
+          <span class="sm-flabel">Sound type</span>
+          <button type="button" class="sm-chip" data-type="san"><span class="sm-swatch san"></span><span class="cjk">散</span> open</button>
+          <button type="button" class="sm-chip" data-type="fan"><span class="sm-swatch fan"></span><span class="cjk">泛</span> harmonic</button>
+          <button type="button" class="sm-chip" data-type="an"><span class="sm-swatch an"></span><span class="cjk">按</span> stopped</button>
+        </div>
+        <div class="sm-frow">
+          <span class="sm-flabel">Position</span>
+          <button type="button" class="sm-chip" data-pos="all">All</button>
+          <button type="button" class="sm-chip" data-pos="on">Only on a hui <small>(+ all 泛)</small></button>
+          <button type="button" class="sm-chip" data-pos="between">Between hui only</button>
+          <p class="sm-note">Open strings follow the sound-type filter only.</p>
+        </div>
+        <div class="sm-frow">
+          <span class="sm-flabel">Scale</span>
+          <button type="button" class="sm-chip" data-scale="penta"><span class="cjk">五聲</span> pentatonic</button>
+          <button type="button" class="sm-chip" data-scale="hepta_bz"><span class="cjk">七聲</span> + 變徵 變宮</button>
+          <button type="button" class="sm-chip" data-scale="hepta_qj"><span class="cjk">七聲</span> + 清角 變宮</button>
+          <button type="button" class="sm-chip" data-scale="chromatic">All chromatic</button>
+        </div>
+        <div class="sm-frow" id="smDegrees">
+          <span class="sm-flabel">Or just one degree, everywhere</span>
+        </div>
+        <div class="sm-frow" id="smStrings">
+          <span class="sm-flabel">Strings</span>
+        </div>
+        <div class="sm-frow" id="smOctaves">
+          <span class="sm-flabel">Register (jianpu octave)</span>
+        </div>
+        <div class="sm-frow">
+          <span class="sm-flabel">Legend</span>
+          <div class="sm-legend">
+            <span><span class="sm-swatch san"></span>散 open (at the head)</span>
+            <span><span class="sm-swatch fan"></span>泛 harmonic (above the string)</span>
+            <span><span class="sm-swatch an"></span>按 stopped (on the string)</span>
+            <span>white rim = 宮 (do) · dots = octave</span>
+          </div>
+          <button type="button" class="sm-chip reset" id="smReset">Reset filters</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/strings.js?v=26"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@
   <title>Guqin Finger-Technique Reference · 古琴指法</title>
   <meta name="description" content="A categorized reference of guqin (古琴) finger techniques as written in jianzipu (减字谱) reduced-character tablature: name, pinyin, reduced glyph, instruction, poetic gesture-image, and sources." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="css/styles.css?v=25" />
+  <link rel="stylesheet" href="css/styles.css?v=26" />
 <!-- PostHog analytics for "guqin-techniques" (one PostHog project for all of Mia's sites; the `app` property tells them apart) -->
 <script>
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}p||((p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",p.onerror=function(){p=null},(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r));var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -52,6 +52,7 @@ addEventListener('appinstalled', function () { posthog.capture('app_installed');
     </div>
     <div class="search-wrap">
       <input id="search" type="search" placeholder="Search name, pinyin, instruction…" autocomplete="off" aria-label="Search techniques" />
+      <a class="page-link" href="strings.html" title="Interactive map of the notes on the 7 strings"><span class="page-link-cjk">弦</span> String map</a>
       <button id="compactToggle" class="compact-toggle" type="button" aria-pressed="false" title="Hide origin & poetic sections">Compact</button>
     </div>
   </header>
@@ -85,6 +86,37 @@ addEventListener('appinstalled', function () { posthog.capture('app_installed');
 
   <button id="toTop" class="to-top" type="button" aria-label="Back to top" hidden>↑</button>
 
-  <script type="module" src="js/app.js?v=25"></script>
+  <!-- Boot-failure fallback: if the module app never fills #results (old cached
+       module, unsupported syntax, network error), show why + a Reload button
+       instead of a blank page. Classic script so it runs even if modules fail. -->
+  <script>
+  (function () {
+    function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    window.__bootFail = function (msg) {
+      var r = document.getElementById("results");
+      if (!r || r.children.length) return;
+      if (msg && msg.message) msg = msg.message;
+      r.innerHTML = '<div class="boot-fail"><b>The page could not start.</b>' +
+        '<code>' + esc(msg || "Unknown error") + '</code>' +
+        '<button type="button" onclick="location.reload()">Reload</button></div>';
+    };
+    window.addEventListener("error", function (e) {
+      var t = e.target;
+      if (t && t !== window) {   // resource error: only our own scripts matter
+        if (t.tagName === "SCRIPT" && /\/js\//.test(t.src || "")) window.__bootFail("Could not load " + t.src);
+        return;
+      }
+      if (e.filename && !/\/js\//.test(e.filename)) return;   // e.g. analytics
+      window.__bootFail(e.message || (e.error && e.error.message));
+    }, true);
+    window.addEventListener("unhandledrejection", function (e) {
+      window.__bootFail(e.reason && (e.reason.message || e.reason));
+    });
+    window.addEventListener("load", function () {
+      setTimeout(function () { window.__bootFail("The app script did not start (timed out). Try reloading."); }, 8000);
+    });
+  })();
+  </script>
+  <script type="module" src="js/app.js?v=26"></script>
 </body>
 </html>

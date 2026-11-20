@@ -53,8 +53,15 @@ jianzipu (减字谱). Lives in repo `decobots/-`, deployed via GitHub Pages at
 - `.nojekyll` present for GitHub Pages.
 
 ## Conventions
-- Bump the `?v=N` query on the css/js `<link>`/`<script>` in `index.html` whenever you change
-  css/js, so phones don't serve stale assets.
+- Bump the `?v=N` query on the css/js `<link>`/`<script>` in `index.html` (and `strings.html`,
+  `review.html`) whenever you change css/js, so phones don't serve stale assets. **Every relative
+  ES-module import also carries the same `?v=N`** (e.g. `from "./util.js?v=26"`), so the whole
+  module graph is cache-busted together; bump them all at once (one `sed` over `js/`), never
+  mix versions (a module imported under two URLs would load twice).
+- `index.html` has a tiny classic inline script (`window.__bootFail`) that shows the error and a
+  Reload button in `#results` if the module app fails to boot (no more blank page).
+- `strings.html` (弦上音位) is the interactive string map: `js/strings.js` + the pure model
+  `js/modules/strings-model.js`; verify the numbers with `node tools/check-strings.mjs`.
 - Commit messages end with the Co-Authored-By / Claude-Session trailer.
 - Work on a dev branch, PR to `main`, merge. Don't push to `main` directly.
 - After JS edits, syntax-check the ES modules (`node --input-type=module --check < js/modules/x.js`)

@@ -1,7 +1,7 @@
 /* Sidebar category navigation. */
-import { escapeHtml } from "./util.js";
-import { state, store, el } from "./store.js";
-import { render } from "./render.js";
+import { escapeHtml } from "./util.js?v=26";
+import { state, store, el } from "./store.js?v=26";
+import { render } from "./render.js?v=26";
 
 export function buildNav() {
   var counts = {};

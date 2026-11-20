@@ -1,8 +1,8 @@
 /* The "Resources & Sources" section (glyph/font credits, source list,
  * licensing). The poetic gesture-images now live on the cards, so the old
  * standalone gesture table is no longer rendered here. */
-import { escapeHtml } from "./util.js";
-import { store, el } from "./store.js";
+import { escapeHtml } from "./util.js?v=26";
+import { store, el } from "./store.js?v=26";
 
 export function buildResources() {
   var r = store.resources;

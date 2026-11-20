@@ -1,6 +1,6 @@
 /* Index the Taiyin Daquanji gesture-images by the technique they illustrate,
  * so each card can render its own poetic gesture inline (no separate gallery). */
-import { store } from "./store.js";
+import { store } from "./store.js?v=26";
 
 export function indexGestures() {
   store.gestureByTech = {};

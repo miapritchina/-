@@ -1,8 +1,8 @@
 /* Technique "sets" — a song's sequence of book numbers (e.g. 55,57,94,122).
  * Applying a set filters to those techniques and shows them in that order.
  * Sets are saved by name in localStorage. */
-import { state, el } from "./store.js";
-import { render } from "./render.js";
+import { state, el } from "./store.js?v=26";
+import { render } from "./render.js?v=26";
 
 var KEY = "techSets";
 function getSets() { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; } }

@@ -1,8 +1,8 @@
 /* The quick symbol index (tap a glyph to jump to its card). */
-import { escapeHtml } from "./util.js";
-import { store, el } from "./store.js";
-import { symbolHtml, hasTileGlyph } from "./symbol.js";
-import { jumpToTechnique } from "./render.js";
+import { escapeHtml } from "./util.js?v=26";
+import { store, el } from "./store.js?v=26";
+import { symbolHtml, hasTileGlyph } from "./symbol.js?v=26";
+import { jumpToTechnique } from "./render.js?v=26";
 
 export function buildSymbolIndex() {
   var html = '<div class="si-head">';

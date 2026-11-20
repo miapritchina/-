@@ -1,6 +1,6 @@
 /* The interactive Jianzipu composer (bundled Qin font, OpenType ligatures). */
-import { escapeHtml } from "./util.js";
-import { el } from "./store.js";
+import { escapeHtml } from "./util.js?v=26";
+import { el } from "./store.js?v=26";
 
 var COMPOSER_PRESETS = [
   { label: "勾 hook", input: "\\g" },
