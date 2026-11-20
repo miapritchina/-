@@ -111,11 +111,17 @@ function computeGeo() {
   var base = Math.max(cw, 760);
   var W = Math.round(base * st.zoom);
   var lane = 58, top = 46;
+  // landscape: pull the strings together so the whole board fits the screen height
+  if (window.innerWidth > window.innerHeight) {
+    top = 40;
+    lane = Math.max(32, Math.min(58, Math.floor((window.innerHeight - 12 - top - 22) / 7)));
+  }
+  var k = lane / 58, mk = Math.max(0.75, k);
   var padL = 44, padR = 86;
   var xY = W - padR;            // yueshan (d = 0)
   var xL = padL;                // longyin (d = 1)
   return {
-    W: W, H: top + lane * 7 + 26, lane: lane, top: top,
+    W: W, H: top + lane * 7 + (k < 1 ? 22 : 26), lane: lane, top: top, k: k, mk: mk,
     xY: xY, xL: xL, L: xY - xL, xOpen: xY + 40,
     x: function (d) { return xY - d * (xY - xL); },
     y: function (s) { return top + (7 - s) * lane + lane / 2; }
@@ -153,6 +159,7 @@ function markerSvg(n, x, y, cls) {
       '<circle class="body" cx="' + x + '" cy="' + y + '" r="' + r + '"/>';
   }
   var ty = y + (n.oct > 0 ? 1.5 : n.oct < 0 ? -1.5 : 0);
+  if (geo.mk < 1) g = g.replace('>', ' transform="translate(' + x + ' ' + y + ') scale(' + geo.mk.toFixed(3) + ') translate(' + (-x) + ' ' + (-y) + ')">');
   return g + '<circle class="hit" cx="' + x + '" cy="' + y + '" r="' + (r + 3) + '"/>' + body +
     '<text x="' + x + '" y="' + ty.toFixed(1) + '">' + label + '</text>' +
     jpDots(x, y, n.oct, r * 0.62, r * 0.66) + '</g>';
@@ -218,11 +225,11 @@ function render() {
       .sort(function (a, b) { return G.x(a.d) - G.x(b.d); });
     var cluster = [];
     var flush = function () {
-      if (cluster.length > 1) cluster.forEach(function (n, i) { offs[n.id] = i % 2 ? 7 : -7; });
+      if (cluster.length > 1) cluster.forEach(function (n, i) { offs[n.id] = (i % 2 ? 7 : -7) * G.k; });
       cluster = [];
     };
     row.forEach(function (n, i) {
-      if (i && G.x(n.d) - G.x(row[i - 1].d) < 22) cluster.push(n);
+      if (i && G.x(n.d) - G.x(row[i - 1].d) < 22 * G.mk) cluster.push(n);
       else { flush(); cluster.push(n); }
     });
     flush();
@@ -236,8 +243,8 @@ function render() {
   draw.forEach(function (n) {
     var x, y;
     if (n.type === "san") { x = G.xOpen; y = G.y(n.string); }
-    else if (n.type === "fan") { x = G.x(n.d); y = G.y(n.string) - 18; }
-    else { x = G.x(n.d); y = G.y(n.string) + 6 + (offs[n.id] || 0); }
+    else if (n.type === "fan") { x = G.x(n.d); y = G.y(n.string) - 18 * G.k; }
+    else { x = G.x(n.d); y = G.y(n.string) + 6 * G.k + (offs[n.id] || 0); }
     var cls = (sameIds[n.id] ? " same" : "") + (n.id === selectedId ? " sel" : "") + (!shownIds[n.id] ? " ghost" : "");
     parts.push(markerSvg(n, +x.toFixed(1), +y.toFixed(1), cls));
   });
